@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 
 public class Supplier {
     private int id;
+    private String code; // Tambahan wajib sesuai database
     private String name;
     private String phone;
     private String email;
@@ -13,7 +14,8 @@ public class Supplier {
 
     public Supplier() {}
 
-    public Supplier(String name, String phone, String address) {
+    public Supplier(String code, String name, String phone, String address) {
+        this.code = code;
         this.name = name;
         this.phone = phone;
         this.address = address;
@@ -22,6 +24,9 @@ public class Supplier {
     // Getters and Setters
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
+
+    public String getCode() { return code; }
+    public void setCode(String code) { this.code = code; }
 
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
@@ -43,6 +48,6 @@ public class Supplier {
 
     @Override
     public String toString() {
-        return name;
+        return code + " - " + name; // Update format string untuk combobox
     }
 }
