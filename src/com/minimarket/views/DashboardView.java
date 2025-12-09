@@ -1,16 +1,13 @@
 package com.minimarket.views;
 
-import com.minimarket.controllers.DashboardController;
 import com.minimarket.controllers.LoginController;
+import com.minimarket.controllers.DashboardController;
 import com.minimarket.models.Product;
 import com.minimarket.models.User;
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.List;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.JTable;
-import javax.swing.JScrollPane;
-
 
 public class DashboardView extends JFrame {
     private DashboardController dashboardController;
@@ -62,7 +59,7 @@ public class DashboardView extends JFrame {
         JMenuItem productItem = new JMenuItem("Produk");
         productItem.addActionListener(e -> openProductView());
         JMenuItem customerItem = new JMenuItem("Customer");
-        customerItem.addActionListener(e -> openCustomerView());
+        customerItem.addActionListener(e -> openCustomerView()); // Ini yang diperbaiki
         JMenuItem supplierItem = new JMenuItem("Supplier");
         supplierItem.addActionListener(e -> openSupplierView());
         JMenuItem userItem = new JMenuItem("User");
@@ -112,6 +109,109 @@ public class DashboardView extends JFrame {
         setJMenuBar(menuBar);
     }
 
+    // PERBAIKAN: Method openCustomerView yang benar
+    private void openCustomerView() {
+        try {
+            CustomerView customerView = new CustomerView();
+            customerView.setVisible(true);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this,
+                    "Error membuka Customer View: " + e.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+        }
+    }
+
+    private void openSaleView() {
+        try {
+            SaleView saleView = new SaleView();
+            saleView.setVisible(true);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this,
+                    "Error membuka Sale View: " + e.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void openProductView() {
+        try {
+            ProductView productView = new ProductView();
+            productView.setVisible(true);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this,
+                    "Error membuka Product View: " + e.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    // Method lainnya tetap sama...
+    private void openPurchaseView() {
+        PurchaseView purchaseView = new PurchaseView();
+        purchaseView.setVisible(true);
+    }
+
+    private void openSupplierView() {
+        JOptionPane.showMessageDialog(this,
+                "Supplier View akan diimplementasikan",
+                "Info", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    private void openUserView() {
+        JOptionPane.showMessageDialog(this,
+                "User View akan diimplementasikan",
+                "Info", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    private void openSalesReport() {
+        ReportView reportView = new ReportView();
+        reportView.setVisible(true);
+    }
+
+    private void openStockReport() {
+        ReportView reportView = new ReportView();
+        reportView.setVisible(true);
+    }
+
+    private void openProductReport() {
+        ReportView reportView = new ReportView();
+        reportView.setVisible(true);
+    }
+
+    private void openStockOpname() {
+        StockView stockView = new StockView();
+        stockView.setVisible(true);
+    }
+
+    private void logout() {
+        int confirm = JOptionPane.showConfirmDialog(this,
+                "Yakin ingin logout?",
+                "Konfirmasi Logout",
+                JOptionPane.YES_NO_OPTION);
+
+        if (confirm == JOptionPane.YES_OPTION) {
+            com.minimarket.controllers.LoginController loginController = new com.minimarket.controllers.LoginController();
+            loginController.logout();
+            this.dispose();
+            new LoginView().setVisible(true);
+        }
+    }
+
+    private void showAbout() {
+        JOptionPane.showMessageDialog(this,
+                "Minimarket POS System v1.0\n" +
+                        "© 2024 Minimarket Solution\n\n" +
+                        "Fitur:\n" +
+                        "- Authentication & Role Management\n" +
+                        "- Point of Sale (POS)\n" +
+                        "- Product Management\n" +
+                        "- Customer Management\n" +
+                        "- Sales Reporting\n" +
+                        "- Stock Management",
+                "About",
+                JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    // Method initContent() dan loadDashboardData() tetap seperti sebelumnya...
     private void initContent() {
         JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
         mainPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
@@ -207,91 +307,5 @@ public class DashboardView extends JFrame {
                     "Error loading dashboard data: " + e.getMessage(),
                     "Error", JOptionPane.ERROR_MESSAGE);
         }
-    }
-
-    private void logout() {
-        int confirm = JOptionPane.showConfirmDialog(this,
-                "Yakin ingin logout?",
-                "Konfirmasi Logout",
-                JOptionPane.YES_NO_OPTION);
-
-        if (confirm == JOptionPane.YES_OPTION) {
-            LoginController loginController = new LoginController();
-            loginController.logout();
-            this.dispose();
-            new LoginView().setVisible(true);
-        }
-    }
-
-    private void openSaleView() {
-        SaleView saleView = new SaleView();
-        saleView.setVisible(true);
-    }
-
-    private void openPurchaseView() {
-        // PurchaseView purchaseView = new PurchaseView();
-        // purchaseView.setVisible(true);
-        JOptionPane.showMessageDialog(this,
-                "Purchase View akan diimplementasikan",
-                "Info", JOptionPane.INFORMATION_MESSAGE);
-    }
-
-    private void openProductView() {
-        ProductView productView = new ProductView();
-        productView.setVisible(true);
-    }
-
-    private void openCustomerView() {
-        // CustomerView customerView = new CustomerView();
-        // customerView.setVisible(true);
-        JOptionPane.showMessageDialog(this,
-                "Customer View akan diimplementasikan",
-                "Info", JOptionPane.INFORMATION_MESSAGE);
-    }
-
-    private void openSupplierView() {
-        JOptionPane.showMessageDialog(this,
-                "Supplier View akan diimplementasikan",
-                "Info", JOptionPane.INFORMATION_MESSAGE);
-    }
-
-    private void openUserView() {
-        JOptionPane.showMessageDialog(this,
-                "User View akan diimplementasikan",
-                "Info", JOptionPane.INFORMATION_MESSAGE);
-    }
-
-    private void openSalesReport() {
-        ReportView reportView = new ReportView();
-        reportView.setVisible(true);
-    }
-
-    private void openStockReport() {
-        ReportView reportView = new ReportView();
-        reportView.setVisible(true);
-    }
-
-    private void openProductReport() {
-        ReportView reportView = new ReportView();
-        reportView.setVisible(true);
-    }
-
-    private void openStockOpname() {
-        StockView stockView = new StockView();
-        stockView.setVisible(true);
-    }
-
-    private void showAbout() {
-        JOptionPane.showMessageDialog(this,
-                "Minimarket POS System v1.0\n" +
-                        "© 2024 Minimarket Solution\n\n" +
-                        "Fitur:\n" +
-                        "- Authentication & Role Management\n" +
-                        "- Point of Sale (POS)\n" +
-                        "- Product Management\n" +
-                        "- Sales Reporting\n" +
-                        "- Stock Management",
-                "About",
-                JOptionPane.INFORMATION_MESSAGE);
     }
 }

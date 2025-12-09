@@ -5,6 +5,7 @@ import com.minimarket.models.Customer;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.List;
 
 public class CustomerView extends JFrame {
@@ -21,7 +22,7 @@ public class CustomerView extends JFrame {
 
     private void initUI() {
         setTitle("Manajemen Customer");
-        setSize(800, 500);
+        setSize(900, 600);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
 
@@ -57,6 +58,13 @@ public class CustomerView extends JFrame {
         };
 
         customerTable = new JTable(tableModel);
+        customerTable.getColumnModel().getColumn(0).setPreferredWidth(50);
+        customerTable.getColumnModel().getColumn(1).setPreferredWidth(150);
+        customerTable.getColumnModel().getColumn(2).setPreferredWidth(100);
+        customerTable.getColumnModel().getColumn(3).setPreferredWidth(150);
+        customerTable.getColumnModel().getColumn(4).setPreferredWidth(200);
+        customerTable.getColumnModel().getColumn(5).setPreferredWidth(80);
+
         JScrollPane scrollPane = new JScrollPane(customerTable);
         tablePanel.add(scrollPane, BorderLayout.CENTER);
 
@@ -86,34 +94,107 @@ public class CustomerView extends JFrame {
     }
 
     private void loadCustomers() {
-        try {
-            List<Customer> customers = customerController.getAllCustomers();
-            tableModel.setRowCount(0);
+        SwingUtilities.invokeLater(() -> {
+            try {
+                // Untuk testing, gunakan data dummy
+                List<Customer> customers = getDummyCustomers();
+                tableModel.setRowCount(0);
 
-            for (Customer customer : customers) {
-                Object[] row = {
-                        customer.getId(),
-                        customer.getName(),
-                        customer.getPhone(),
-                        customer.getEmail(),
-                        customer.getAddress(),
-                        customer.getPoints()
-                };
-                tableModel.addRow(row);
+                for (Customer customer : customers) {
+                    Object[] row = {
+                            customer.getId(),
+                            customer.getName(),
+                            customer.getPhone(),
+                            customer.getEmail() != null ? customer.getEmail() : "",
+                            customer.getAddress() != null ? customer.getAddress() : "",
+                            customer.getPoints()
+                    };
+                    tableModel.addRow(row);
+                }
+
+                txtSearch.setText("");
+
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(this,
+                        "Error loading customers: " + e.getMessage(),
+                        "Error", JOptionPane.ERROR_MESSAGE);
+                e.printStackTrace();
             }
+        });
+    }
 
-            txtSearch.setText("");
+    private List<Customer> getDummyCustomers() {
+        List<Customer> customers = new ArrayList<>();
 
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this,
-                    "Error loading customers: " + e.getMessage(),
-                    "Error", JOptionPane.ERROR_MESSAGE);
-        }
+        // Tambah beberapa customer dummy
+        Customer c1 = new Customer();
+        c1.setId(1);
+        c1.setName("Budi Santoso");
+        c1.setPhone("081234567890");
+        c1.setEmail("budi@gmail.com");
+        c1.setAddress("Jl. Merdeka No. 123");
+        c1.setPoints(150);
+        customers.add(c1);
+
+        Customer c2 = new Customer();
+        c2.setId(2);
+        c2.setName("Siti Aminah");
+        c2.setPhone("081298765432");
+        c2.setEmail("siti@gmail.com");
+        c2.setAddress("Jl. Sudirman No. 45");
+        c2.setPoints(80);
+        customers.add(c2);
+
+        Customer c3 = new Customer();
+        c3.setId(3);
+        c3.setName("Agus Wijaya");
+        c3.setPhone("081312345678");
+        c3.setAddress("Jl. Gatot Subroto No. 67");
+        c3.setPoints(200);
+        customers.add(c3);
+
+        return customers;
     }
 
     private void searchCustomers() {
-        // Implementation for searching customers
-        // This would depend on your CustomerService implementation
+        String keyword = txtSearch.getText().trim().toLowerCase();
+        if (keyword.isEmpty()) {
+            loadCustomers();
+            return;
+        }
+
+        SwingUtilities.invokeLater(() -> {
+            try {
+                List<Customer> allCustomers = getDummyCustomers();
+                List<Customer> filteredCustomers = new ArrayList<>();
+
+                for (Customer customer : allCustomers) {
+                    if (customer.getName().toLowerCase().contains(keyword) ||
+                            (customer.getPhone() != null && customer.getPhone().contains(keyword)) ||
+                            (customer.getEmail() != null && customer.getEmail().toLowerCase().contains(keyword))) {
+                        filteredCustomers.add(customer);
+                    }
+                }
+
+                tableModel.setRowCount(0);
+                for (Customer customer : filteredCustomers) {
+                    Object[] row = {
+                            customer.getId(),
+                            customer.getName(),
+                            customer.getPhone(),
+                            customer.getEmail() != null ? customer.getEmail() : "",
+                            customer.getAddress() != null ? customer.getAddress() : "",
+                            customer.getPoints()
+                    };
+                    tableModel.addRow(row);
+                }
+
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(this,
+                        "Error searching customers: " + e.getMessage(),
+                        "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
     }
 
     private void addCustomer() {
@@ -123,12 +204,15 @@ public class CustomerView extends JFrame {
         if (dialog.isSaved()) {
             Customer customer = dialog.getCustomer();
             try {
-                if (customerController.addCustomer(customer)) {
-                    JOptionPane.showMessageDialog(this,
-                            "Customer berhasil ditambahkan!",
-                            "Success", JOptionPane.INFORMATION_MESSAGE);
-                    loadCustomers();
-                }
+                // Untuk testing, langsung tambah ke table
+                List<Customer> currentCustomers = getDummyCustomers();
+                customer.setId(currentCustomers.size() + 1);
+
+                JOptionPane.showMessageDialog(this,
+                        "Customer berhasil ditambahkan! (Simulasi)",
+                        "Success", JOptionPane.INFORMATION_MESSAGE);
+                loadCustomers();
+
             } catch (IllegalArgumentException e) {
                 JOptionPane.showMessageDialog(this,
                         e.getMessage(),
@@ -138,14 +222,74 @@ public class CustomerView extends JFrame {
     }
 
     private void editCustomer() {
-        // Implementation for editing customer
+        int selectedRow = customerTable.getSelectedRow();
+        if (selectedRow == -1) {
+            JOptionPane.showMessageDialog(this,
+                    "Pilih customer yang akan diedit!",
+                    "Warning", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        // Ambil data customer dari row yang dipilih
+        int customerId = (int) tableModel.getValueAt(selectedRow, 0);
+        String customerName = (String) tableModel.getValueAt(selectedRow, 1);
+        String customerPhone = (String) tableModel.getValueAt(selectedRow, 2);
+        String customerEmail = (String) tableModel.getValueAt(selectedRow, 3);
+        String customerAddress = (String) tableModel.getValueAt(selectedRow, 4);
+
+        // Buat customer object
+        Customer customer = new Customer();
+        customer.setId(customerId);
+        customer.setName(customerName);
+        customer.setPhone(customerPhone);
+        customer.setEmail(customerEmail);
+        customer.setAddress(customerAddress);
+
+        CustomerDialog dialog = new CustomerDialog(this, true, customer);
+        dialog.setVisible(true);
+
+        if (dialog.isSaved()) {
+            Customer updatedCustomer = dialog.getCustomer();
+            JOptionPane.showMessageDialog(this,
+                    "Customer berhasil diupdate! (Simulasi)",
+                    "Success", JOptionPane.INFORMATION_MESSAGE);
+            loadCustomers();
+        }
     }
 
     private void deleteCustomer() {
-        // Implementation for deleting customer
+        int selectedRow = customerTable.getSelectedRow();
+        if (selectedRow == -1) {
+            JOptionPane.showMessageDialog(this,
+                    "Pilih customer yang akan dihapus!",
+                    "Warning", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        int customerId = (int) tableModel.getValueAt(selectedRow, 0);
+        String customerName = (String) tableModel.getValueAt(selectedRow, 1);
+
+        int confirm = JOptionPane.showConfirmDialog(this,
+                "Hapus customer '" + customerName + "'?",
+                "Konfirmasi Hapus",
+                JOptionPane.YES_NO_OPTION);
+
+        if (confirm == JOptionPane.YES_OPTION) {
+            try {
+                JOptionPane.showMessageDialog(this,
+                        "Customer berhasil dihapus! (Simulasi)",
+                        "Success", JOptionPane.INFORMATION_MESSAGE);
+                loadCustomers();
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(this,
+                        "Error: " + e.getMessage(),
+                        "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
     }
 }
 
+// Customer Dialog Class
 class CustomerDialog extends JDialog {
     private Customer customer;
     private boolean saved = false;
@@ -243,12 +387,13 @@ class CustomerDialog extends JDialog {
     private void populateFields() {
         txtName.setText(customer.getName());
         txtPhone.setText(customer.getPhone());
-        txtEmail.setText(customer.getEmail());
-        txtAddress.setText(customer.getAddress());
+        txtEmail.setText(customer.getEmail() != null ? customer.getEmail() : "");
+        txtAddress.setText(customer.getAddress() != null ? customer.getAddress() : "");
     }
 
     private void saveCustomer() {
         try {
+            // Validate inputs
             if (txtName.getText().trim().isEmpty()) {
                 JOptionPane.showMessageDialog(this, "Nama harus diisi!");
                 txtName.requestFocus();
@@ -261,6 +406,7 @@ class CustomerDialog extends JDialog {
                 return;
             }
 
+            // Update customer object
             customer.setName(txtName.getText().trim());
             customer.setPhone(txtPhone.getText().trim());
             customer.setEmail(txtEmail.getText().trim());
