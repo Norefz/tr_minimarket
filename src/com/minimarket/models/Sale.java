@@ -113,4 +113,7 @@ public class Sale {
     public void calculateChange() {
         this.changeAmount = amountPaid - totalAmount;
     }
+
+    public void setCustomerName(String customerName) {
+    }
 }

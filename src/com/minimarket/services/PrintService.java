@@ -42,8 +42,5 @@ public class PrintService {
         return false;
     }
 
-    public static boolean printReceipt58mm(Sale sale) {
-        String receiptText = com.minimarket.utils.ReceiptGenerator.generate58mmReceipt(sale);
-        return printReceipt(receiptText);
-    }
+
 }
