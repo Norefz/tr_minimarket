@@ -62,16 +62,22 @@ public class ProductService {
     }
 
     public boolean addProduct(Product product) {
-        String sql = "INSERT INTO products (code, name, unit, price, stock) VALUES (?, ?, ?, ?, ?)";
+        // Tambahkan kolom category di query
+        String sql = "INSERT INTO products (code, name, category, unit, price, stock) VALUES (?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setString(1, product.getCode());
             pstmt.setString(2, product.getName());
-            pstmt.setString(3, product.getUnit());
-            pstmt.setDouble(4, product.getPrice());
-            pstmt.setInt(5, product.getStock());
+
+            // --- TAMBAHAN BARU ---
+            pstmt.setString(3, product.getCategory());
+            // ---------------------
+
+            pstmt.setString(4, product.getUnit());
+            pstmt.setDouble(5, product.getPrice());
+            pstmt.setInt(6, product.getStock());
 
             return pstmt.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -81,16 +87,22 @@ public class ProductService {
     }
 
     public boolean updateProduct(Product product) {
-        String sql = "UPDATE products SET name = ?, unit = ?, price = ?, stock = ? WHERE id = ?";
+        // Tambahkan category = ? di query
+        String sql = "UPDATE products SET name = ?, category = ?, unit = ?, price = ?, stock = ? WHERE id = ?";
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setString(1, product.getName());
-            pstmt.setString(2, product.getUnit());
-            pstmt.setDouble(3, product.getPrice());
-            pstmt.setInt(4, product.getStock());
-            pstmt.setInt(5, product.getId());
+
+            // --- TAMBAHAN BARU ---
+            pstmt.setString(2, product.getCategory());
+            // ---------------------
+
+            pstmt.setString(3, product.getUnit());
+            pstmt.setDouble(4, product.getPrice());
+            pstmt.setInt(5, product.getStock());
+            pstmt.setInt(6, product.getId());
 
             return pstmt.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -173,10 +185,16 @@ public class ProductService {
         product.setId(rs.getInt("id"));
         product.setCode(rs.getString("code"));
         product.setName(rs.getString("name"));
+
+        // --- TAMBAHAN BARU ---
+        product.setCategory(rs.getString("category"));
+        // ---------------------
+
         product.setUnit(rs.getString("unit"));
         product.setPrice(rs.getDouble("price"));
         product.setStock(rs.getInt("stock"));
         product.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
+
         if (rs.getTimestamp("updated_at") != null) {
             product.setUpdatedAt(rs.getTimestamp("updated_at").toLocalDateTime());
         }

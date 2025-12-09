@@ -93,6 +93,14 @@ public class DashboardView extends JFrame {
         stockOpnameItem.addActionListener(e -> openStockOpname());
         stockMenu.add(stockOpnameItem);
 
+        //Manajemen stok
+        JMenuItem inventoryItem = new JMenuItem("Manajemen Batas Stok");
+        inventoryItem.addActionListener(e -> {
+            InventoryView view = new InventoryView();
+            view.setVisible(true);
+        });
+
+
         // Help menu
         JMenu helpMenu = new JMenu("Help");
         JMenuItem aboutItem = new JMenuItem("About");
@@ -105,7 +113,7 @@ public class DashboardView extends JFrame {
         menuBar.add(stockMenu);
         menuBar.add(reportMenu);
         menuBar.add(helpMenu);
-
+        stockMenu.add(inventoryItem);
         setJMenuBar(menuBar);
     }
 
