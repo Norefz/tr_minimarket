@@ -154,10 +154,10 @@ public class DashboardView extends JFrame {
         SupplierView supplierView = new SupplierView();
         supplierView.setVisible(true);
     }
+
     private void openUserView() {
-        JOptionPane.showMessageDialog(this,
-                "User View akan diimplementasikan",
-                "Info", JOptionPane.INFORMATION_MESSAGE);
+        UserView userView = new UserView();
+        userView.setVisible(true);
     }
 
     private void openSalesReport() {

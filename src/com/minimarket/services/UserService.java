@@ -17,8 +17,7 @@ public class UserService {
              ResultSet rs = stmt.executeQuery(sql)) {
 
             while (rs.next()) {
-                User user = mapResultSetToUser(rs);
-                users.add(user);
+                users.add(mapResultSetToUser(rs));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -28,16 +27,11 @@ public class UserService {
 
     public User getUserById(int id) {
         String sql = "SELECT * FROM users WHERE id = ?";
-
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
             pstmt.setInt(1, id);
             ResultSet rs = pstmt.executeQuery();
-
-            if (rs.next()) {
-                return mapResultSetToUser(rs);
-            }
+            if (rs.next()) return mapResultSetToUser(rs);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -46,15 +40,12 @@ public class UserService {
 
     public boolean addUser(User user) {
         String sql = "INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)";
-
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
             pstmt.setString(1, user.getName());
             pstmt.setString(2, user.getEmail());
-            pstmt.setString(3, user.getPassword());
+            pstmt.setString(3, user.getPassword()); // Di real app, ini harus di-hash (MD5/BCrypt)
             pstmt.setString(4, user.getRole());
-
             return pstmt.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -63,7 +54,15 @@ public class UserService {
     }
 
     public boolean updateUser(User user) {
-        String sql = "UPDATE users SET name = ?, email = ?, role = ? WHERE id = ?";
+        // Logika: Jika password kosong, jangan update kolom password
+        boolean updatePassword = user.getPassword() != null && !user.getPassword().isEmpty();
+
+        String sql;
+        if (updatePassword) {
+            sql = "UPDATE users SET name = ?, email = ?, role = ?, password = ? WHERE id = ?";
+        } else {
+            sql = "UPDATE users SET name = ?, email = ?, role = ? WHERE id = ?";
+        }
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -71,7 +70,13 @@ public class UserService {
             pstmt.setString(1, user.getName());
             pstmt.setString(2, user.getEmail());
             pstmt.setString(3, user.getRole());
-            pstmt.setInt(4, user.getId());
+
+            if (updatePassword) {
+                pstmt.setString(4, user.getPassword());
+                pstmt.setInt(5, user.getId());
+            } else {
+                pstmt.setInt(4, user.getId());
+            }
 
             return pstmt.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -82,10 +87,8 @@ public class UserService {
 
     public boolean deleteUser(int id) {
         String sql = "DELETE FROM users WHERE id = ?";
-
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
             pstmt.setInt(1, id);
             return pstmt.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -102,9 +105,6 @@ public class UserService {
         user.setPassword(rs.getString("password"));
         user.setRole(rs.getString("role"));
         user.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
-        if (rs.getTimestamp("updated_at") != null) {
-            user.setUpdatedAt(rs.getTimestamp("updated_at").toLocalDateTime());
-        }
         return user;
     }
 }
