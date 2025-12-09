@@ -7,6 +7,10 @@ import com.minimarket.models.User;
 import javax.swing.*;
 import java.awt.*;
 import java.util.List;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.JTable;
+import javax.swing.JScrollPane;
+
 
 public class DashboardView extends JFrame {
     private DashboardController dashboardController;
