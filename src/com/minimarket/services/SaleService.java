@@ -5,6 +5,7 @@ import com.minimarket.models.SaleItem;
 import com.minimarket.database.DatabaseConnection;
 import java.sql.*;
 import java.util.List;
+import java.sql.Date;
 
 public class SaleService {
     private ProductService productService;
@@ -137,5 +138,44 @@ public class SaleService {
     }
 
     public com.minimarket.models.Sale getSaleById(int id) { return null; }
-    public double getDailyTotal(java.sql.Date date) { return 0; }
+
+    public double getDailyTotal(java.sql.Date date) {
+        double total = 0;
+        // Query untuk menjumlahkan kolom total_amount berdasarkan tanggal
+        String sql = "SELECT SUM(total_amount) FROM sales WHERE DATE(sale_datetime) = ?";
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setDate(1, date);
+            ResultSet rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                total = rs.getDouble(1); // Ambil hasil SUM
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return total;
+    }
+
+    public int getDailyTransactionCount(java.sql.Date date) {
+        int count = 0;
+        // Query untuk menghitung jumlah baris (transaksi) berdasarkan tanggal
+        String sql = "SELECT COUNT(*) FROM sales WHERE DATE(sale_datetime) = ?";
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setDate(1, date);
+            ResultSet rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                count = rs.getInt(1); // Ambil hasil COUNT
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return count;
+    }
 }

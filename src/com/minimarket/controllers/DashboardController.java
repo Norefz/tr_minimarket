@@ -20,13 +20,17 @@ public class DashboardController {
     }
 
     public double getTodaySales() {
+        // Mengambil tanggal hari ini
         Date today = Date.valueOf(LocalDate.now());
+        // Memanggil service untuk total uang
         return saleService.getDailyTotal(today);
     }
 
     public int getTodayTransactions() {
-        // Implementation depends on your database schema
-        return 0;
+        // Mengambil tanggal hari ini
+        Date today = Date.valueOf(LocalDate.now());
+        // PERBAIKAN: Memanggil service untuk jumlah transaksi (sebelumnya return 0)
+        return saleService.getDailyTransactionCount(today);
     }
 
     public List<com.minimarket.models.Product> getLowStockProducts() {
