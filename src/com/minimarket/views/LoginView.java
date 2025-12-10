@@ -17,7 +17,7 @@ public class LoginView extends JFrame {
     }
 
     private void initUI() {
-        setTitle("Login - Minimarket POS");
+        setTitle("Login - Minimarket Berkah");
         setSize(400, 300);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);

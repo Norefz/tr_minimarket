@@ -20,7 +20,7 @@ public class InventoryView extends JFrame {
     }
 
     private void initUI() {
-        setTitle("Manajemen Batas Stok (Inventory Control)");
+        setTitle("Inventory Control");
         setSize(900, 600);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);

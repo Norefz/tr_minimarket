@@ -23,7 +23,7 @@ public class DashboardView extends JFrame {
     }
 
     private void initUI() {
-        setTitle("Dashboard - Minimarket POS");
+        setTitle("Minimarket Berkah");
         setSize(1024, 768);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
@@ -204,8 +204,8 @@ public class DashboardView extends JFrame {
 
     private void showAbout() {
         JOptionPane.showMessageDialog(this,
-                "Minimarket POS KElOMPOK 1\n" +
-                        "© 2025 Minimarket Kelompok 1\n\n" +
+                "Minimarket Berkah\n" +
+                        "© 2025 Minimarket Berkah\n\n" +
                         "Fitur:\n" +
                         "- Authentication & Role Management\n" +
                         "- Point of Sale (POS)\n" +

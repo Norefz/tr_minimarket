@@ -28,7 +28,7 @@ public class PDFExporter {
 
         // Store info
         Font storeFont = FontFactory.getFont(FontFactory.HELVETICA, 12);
-        Paragraph storeInfo = new Paragraph("MINIMARKET SUKA MAJU\nJl. Contoh No. 123", storeFont);
+        Paragraph storeInfo = new Paragraph("MINIMARKET BERKAH\nJl. Gunung Payung 1", storeFont);
         storeInfo.setAlignment(Element.ALIGN_CENTER);
         storeInfo.setSpacingAfter(10);
         document.add(storeInfo);

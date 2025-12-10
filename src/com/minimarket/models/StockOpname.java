@@ -19,6 +19,8 @@ public class StockOpname {
         this.opnameDate = LocalDateTime.now();
     }
 
+
+
     // Getters and Setters
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
@@ -28,6 +30,7 @@ public class StockOpname {
 
     public LocalDateTime getOpnameDate() { return opnameDate; }
     public void setOpnameDate(LocalDateTime opnameDate) { this.opnameDate = opnameDate; }
+
 
     public int getSystemStock() { return systemStock; }
     public void setSystemStock(int systemStock) { this.systemStock = systemStock; }

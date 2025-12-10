@@ -13,9 +13,9 @@ public class ReceiptGenerator {
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
 
         receipt.append("========================================\n");
-        receipt.append(centerText("MINIMARKET SUKA MAJU", 40)).append("\n");
-        receipt.append(centerText("Jl. Contoh No. 123", 40)).append("\n");
-        receipt.append(centerText("Telp: 021-12345678", 40)).append("\n");
+        receipt.append(centerText("MINIMARKET BERKAH", 40)).append("\n");
+        receipt.append(centerText("Jl. GUNUNG PAYUNG 1", 40)).append("\n");
+        receipt.append(centerText("Telp: 081247168869", 40)).append("\n");
         receipt.append("========================================\n");
 
         // PERBAIKAN DI SINI: Gunakan dtf.format() untuk LocalDateTime
