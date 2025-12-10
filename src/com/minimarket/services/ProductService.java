@@ -200,4 +200,22 @@ public class ProductService {
         }
         return product;
     }
+
+    // Method updateStock baru yang menerima Connection dari luar (untuk Transaksi)
+    public boolean updateStock(int productId, int quantity, Connection conn) {
+        String sql = "UPDATE products SET stock = stock - ? WHERE id = ? AND stock >= ?";
+
+        // Perhatikan: Kita TIDAK menutup 'conn' di sini (tidak ada try-with-resources pada conn)
+        // Kita hanya menutup PreparedStatement
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, quantity);
+            pstmt.setInt(2, productId);
+            pstmt.setInt(3, quantity); // Pastikan stok cukup (stock >= quantity)
+
+            return pstmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }

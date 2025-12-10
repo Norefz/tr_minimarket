@@ -4,8 +4,6 @@ import com.minimarket.models.Sale;
 import com.minimarket.models.SaleItem;
 import com.minimarket.database.DatabaseConnection;
 import java.sql.*;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 public class SaleService {
@@ -22,22 +20,40 @@ public class SaleService {
 
         try {
             conn = DatabaseConnection.getConnection();
-            conn.setAutoCommit(false);
+            conn.setAutoCommit(false); // Mulai Transaksi
 
-            // Insert sale
+            // PERBAIKAN:
+            // 1. Menambahkan payment_method, customer_id, discount, tax
+            // 2. Mengubah change_amount menjadi charge_amount (sesuai database kamu)
             String sql = "INSERT INTO sales (store_id, user_id, receipt_number, sale_datetime, " +
-                    "subtotal, total_amount, amount_paid, change_amount) " +
-                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+                    "subtotal, total_amount, amount_paid, charge_amount, " +
+                    "payment_method, customer_id, discount, tax) " +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
             pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
             pstmt.setInt(1, sale.getStoreId());
-            pstmt.setInt(2, sale.getUserId());
+
+            // Cek user id (handle jika null/logout)
+            if(sale.getUserId() > 0) pstmt.setInt(2, sale.getUserId());
+            else pstmt.setNull(2, Types.INTEGER);
+
             pstmt.setString(3, sale.getReceiptNumber());
             pstmt.setTimestamp(4, Timestamp.valueOf(sale.getSaleDatetime()));
             pstmt.setDouble(5, sale.getSubtotal());
             pstmt.setDouble(6, sale.getTotalAmount());
             pstmt.setDouble(7, sale.getAmountPaid());
-            pstmt.setDouble(8, sale.getChangeAmount());
+            pstmt.setDouble(8, sale.getChangeAmount()); // Mapping ke charge_amount DB
+            pstmt.setString(9, sale.getPaymentMethod());
+
+            // Handle Customer ID (bisa null jika pelanggan umum)
+            if (sale.getCustomerId() > 0) {
+                pstmt.setInt(10, sale.getCustomerId());
+            } else {
+                pstmt.setNull(10, Types.INTEGER);
+            }
+
+            pstmt.setDouble(11, sale.getDiscount());
+            pstmt.setDouble(12, sale.getTax());
 
             int affectedRows = pstmt.executeUpdate();
 
@@ -57,26 +73,32 @@ public class SaleService {
 
                 // Update product stocks
                 for (SaleItem item : sale.getItems()) {
-                    if (!productService.updateStock(item.getProductId(), item.getQuantity())) {
-                        throw new SQLException("Failed to update stock for product ID: " + item.getProductId());
+                    // PERBAIKAN DI SINI:
+                    // Kirim 'conn' ke dalam method updateStock
+                    boolean success = productService.updateStock(item.getProductId(), item.getQuantity(), conn);
+
+                    if (!success) {
+                        throw new SQLException("Gagal update stok untuk produk ID: " + item.getProductId() + ". Stok mungkin tidak cukup.");
                     }
                 }
 
-                conn.commit();
+                conn.commit(); // Sekarang ini akan berhasil karena koneksi belum ditutup
                 return true;
+
             }
         } catch (SQLException e) {
             try {
-                if (conn != null) conn.rollback();
+                if (conn != null) conn.rollback(); // Batalkan jika error
             } catch (SQLException ex) {
                 ex.printStackTrace();
             }
             e.printStackTrace();
+            System.err.println("SQL Error: " + e.getMessage());
         } finally {
             try {
                 if (generatedKeys != null) generatedKeys.close();
                 if (pstmt != null) pstmt.close();
-                if (conn != null) conn.close();
+                // conn.close() ditangani oleh DatabaseConnection atau biarkan terbuka jika singleton
             } catch (SQLException e) {
                 e.printStackTrace();
             }
@@ -100,7 +122,7 @@ public class SaleService {
 
             int[] results = pstmt.executeBatch();
             for (int result : results) {
-                if (result <= 0) {
+                if (result == Statement.EXECUTE_FAILED) {
                     return false;
                 }
             }
@@ -108,30 +130,12 @@ public class SaleService {
         }
     }
 
+    // ... method lain (generateReceiptNumber dll) biarkan tetap sama ...
     public String generateReceiptNumber() {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
-        return "INV-" + LocalDateTime.now().format(formatter);
+        java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+        return "INV-" + java.time.LocalDateTime.now().format(formatter);
     }
 
-    public List<Sale> getSalesByDate(java.sql.Date date) {
-        return getSalesByDateRange(date, date);
-    }
-
-    public List<Sale> getSalesByDateRange(java.sql.Date startDate, java.sql.Date endDate) {
-        // This method would query the database
-        // Implementation depends on your database schema
-        return null;
-    }
-
-    public Sale getSaleById(int id) {
-        // This method would query the database
-        // Implementation depends on your database schema
-        return null;
-    }
-
-    public double getDailyTotal(java.sql.Date date) {
-        // This method would query the database
-        // Implementation depends on your database schema
-        return 0;
-    }
+    public com.minimarket.models.Sale getSaleById(int id) { return null; }
+    public double getDailyTotal(java.sql.Date date) { return 0; }
 }

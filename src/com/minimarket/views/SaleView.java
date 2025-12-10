@@ -406,105 +406,88 @@ public class SaleView extends JFrame {
         }
 
         try {
-            // Get payment details
+            // 1. Ambil Input dari Form
             double amountPaid = 0;
             double discount = 0;
             double tax = 0;
 
             try {
-                amountPaid = Double.parseDouble(txtAmountPaid.getText());
-                discount = Double.parseDouble(txtDiscount.getText());
-                tax = Double.parseDouble(txtTax.getText());
+                String paidStr = txtAmountPaid.getText().replaceAll("[^0-9.]", ""); // Bersihkan format currency jika ada
+                String discStr = txtDiscount.getText().replaceAll("[^0-9.]", "");
+                String taxStr = txtTax.getText().replaceAll("[^0-9.]", "");
+
+                amountPaid = paidStr.isEmpty() ? 0 : Double.parseDouble(paidStr);
+                discount = discStr.isEmpty() ? 0 : Double.parseDouble(discStr);
+                tax = taxStr.isEmpty() ? 0 : Double.parseDouble(taxStr);
             } catch (NumberFormatException e) {
                 JOptionPane.showMessageDialog(this,
-                        "Jumlah bayar, diskon, dan pajak harus angka!",
+                        "Format angka salah!",
                         "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
-            if (amountPaid <= 0) {
+            // Validasi Pembayaran
+            double currentTotal = calculateCurrentTotalValue(discount, tax);
+            if (amountPaid < currentTotal) {
                 JOptionPane.showMessageDialog(this,
-                        "Jumlah bayar harus lebih dari 0!",
+                        String.format("Uang kurang! Total: Rp %,.0f, Bayar: Rp %,.0f", currentTotal, amountPaid),
                         "Error", JOptionPane.ERROR_MESSAGE);
-                txtAmountPaid.requestFocus();
-                return;
-            }
-
-            // Calculate totals
-            double subtotal = cartItems.stream()
-                    .mapToDouble(SaleItem::getLineTotal)
-                    .sum();
-
-            double afterDiscount = subtotal - discount;
-            double taxAmount = afterDiscount * (tax / 100);
-            double total = afterDiscount + taxAmount;
-
-            if (amountPaid < total) {
-                JOptionPane.showMessageDialog(this,
-                        String.format("Jumlah bayar kurang! Total: Rp %,.0f", total),
-                        "Error", JOptionPane.ERROR_MESSAGE);
-                txtAmountPaid.requestFocus();
                 return;
             }
 
             String paymentMethod = (String) cmbPayment.getSelectedItem();
-            String customerName = txtCustomerName.getText().trim();
 
-            // Create sale object
-            Sale sale = new Sale();
+            // TODO: Integrasikan dengan Customer jika ada fitur pilih customer
+            // Untuk sekarang set 0 (Customer Umum) atau ambil dari component jika sudah dibuat
+            int customerId = 0;
 
-            // Set items (create new list to avoid reference issues)
-            List<SaleItem> saleItems = new ArrayList<>();
-            for (SaleItem item : cartItems) {
-                SaleItem newItem = new SaleItem();
-                newItem.setProductId(item.getProductId());
-                newItem.setProduct(item.getProduct());
-                newItem.setQuantity(item.getQuantity());
-                newItem.setPrice(item.getPrice());
-                newItem.setLineTotal(item.getLineTotal());
-                saleItems.add(newItem);
+            // 2. PANGGIL CONTROLLER (Inilah jembatan ke database)
+            // Kita kirim cartItems clone agar list asli aman
+            List<SaleItem> itemsToSave = new ArrayList<>(cartItems);
+
+            Sale savedSale = saleController.createSale(
+                    itemsToSave,
+                    paymentMethod,
+                    amountPaid,
+                    customerId,
+                    discount,
+                    tax
+            );
+
+            // 3. Cek Hasil
+            if (savedSale != null) {
+                // Berhasil disimpan ke DB!
+
+                // Generate receipt text
+                String receipt = ReceiptGenerator.generateReceipt(savedSale);
+
+                // Show receipt dialog
+                showReceiptDialog(receipt, savedSale);
+
+                // Clear UI
+                clearCart();
+            } else {
+                JOptionPane.showMessageDialog(this,
+                        "Gagal menyimpan transaksi ke database!",
+                        "Database Error", JOptionPane.ERROR_MESSAGE);
             }
-            sale.setItems(saleItems);
 
-            // Calculate and set totals
-            sale.setSubtotal(subtotal);
-            sale.setDiscount(discount);
-            sale.setTax(tax);
-            sale.setTotalAmount(total);
-            sale.setAmountPaid(amountPaid);
-            sale.setChangeAmount(amountPaid - total);
-
-            // Set other details
-            sale.setPaymentMethod(paymentMethod);
-            sale.setCustomerName(customerName);
-
-            // Generate receipt number
-            sale.setReceiptNumber("INV-" + System.currentTimeMillis());
-
-            // Create dummy user for testing
-            com.minimarket.models.User user = new com.minimarket.models.User();
-            user.setId(1);
-            user.setName("Kasir");
-            sale.setUser(user);
-
-            // Create dummy store
-            sale.setStoreId(1);
-
-            // Generate receipt
-            String receipt = ReceiptGenerator.generateReceipt(sale);
-
-            // Show receipt dialog
-            showReceiptDialog(receipt, sale);
-
-            // Clear cart
-            clearCart();
-
+        } catch (IllegalArgumentException e) {
+            JOptionPane.showMessageDialog(this, e.getMessage(), "Validasi Error", JOptionPane.WARNING_MESSAGE);
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this,
                     "Terjadi kesalahan: " + e.getMessage(),
                     "Error", JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
         }
+
+    }
+
+    private double calculateCurrentTotalValue(double discount, double tax) {
+        double subtotal = cartItems.stream().mapToDouble(SaleItem::getLineTotal).sum();
+        double afterDiscount = subtotal - discount;
+        double taxAmount = afterDiscount * (tax / 100);
+        return afterDiscount + taxAmount;
     }
 
     private void showReceiptDialog(String receipt, Sale sale) {
