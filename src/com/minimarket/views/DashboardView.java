@@ -204,8 +204,8 @@ public class DashboardView extends JFrame {
 
     private void showAbout() {
         JOptionPane.showMessageDialog(this,
-                "Minimarket POS System v1.0\n" +
-                        "© 2024 Minimarket Solution\n\n" +
+                "Minimarket POS KElOMPOK 1\n" +
+                        "© 2025 Minimarket Kelompok 1\n\n" +
                         "Fitur:\n" +
                         "- Authentication & Role Management\n" +
                         "- Point of Sale (POS)\n" +
